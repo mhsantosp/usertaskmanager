@@ -1,0 +1,22 @@
+.card {
+  background: white;
+  border: 1px solid #ddd;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+
+  button {
+    margin-top: 0.5rem;
+    background-color: var(--primary-color);
+    border: #005dc1 1px solid;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+
+    &:hover {
+      background-color: #005dc1;
+      color: white;
+    }
+  }
+}

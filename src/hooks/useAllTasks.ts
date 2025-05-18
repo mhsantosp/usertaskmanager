@@ -1,9 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
-import { fetchAllTasks } from '../services/allTasks';
+import { serviceAllTasks } from '../services/allTasks';
 
+// This hook fetches all tasks from the API using react-query
 export const useAllTasks = () => {
-  return useQuery({
+  const allTasks = useQuery({
     queryKey: ['allTasks'],
-    queryFn: fetchAllTasks,
+    queryFn: serviceAllTasks,
   })
+  return allTasks
 }

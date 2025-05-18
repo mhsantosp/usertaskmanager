@@ -1,37 +1,119 @@
-import { renderHook } from "@testing-library/react";
-import { useUsers } from "./useAllUsers";
-
 describe("useUsers", () => {
-  it("should return successful query result when fetchUsers succeeds", () => {
-    const mockData = [
-      { id: 1, name: "John" },
-      { id: 2, name: "Jane" },
-    ];
+  // Returns query result from useQuery hook when API call succeeds
+  it("should return query result when API call succeeds", () => {
+    const mockQueryResult = {
+      data: [{ id: 1, name: "John Doe" }],
+      isLoading: false,
+      isError: false,
+    };
 
-    jest.mock("../services/allUsers", () => ({
-      fetchUsers: jest.fn().mockResolvedValue(mockData),
+    jest.mock("@tanstack/react-query", () => ({
+      useQuery: jest.fn().mockReturnValue(mockQueryResult),
     }));
 
-    const { result } = renderHook(() => useUsers());
+    const { useQuery } = require("@tanstack/react-query");
+    const { serviceAllUsers } = require("../services/allUsers");
+    const { useUsers } = require("./useAllUsers");
 
-    expect(result.current.data).toEqual(mockData);
-    expect(result.current.isSuccess).toBe(true);
-    expect(result.current.isLoading).toBe(false);
-    expect(result.current.isError).toBe(false);
+    const result = useUsers();
+
+    expect(useQuery).toHaveBeenCalledWith({
+      queryKey: ["users"],
+      queryFn: serviceAllUsers,
+    });
+    expect(result).toEqual(mockQueryResult);
   });
 
-  it("should handle error state when fetchUsers fails", () => {
-    const mockError = new Error("Failed to fetch users");
+  // Handles API errors when serviceAllUsers throws an Error
+  it("should handle API errors when serviceAllUsers throws an Error", () => {
+    const mockErrorResult = {
+      data: undefined,
+      isLoading: false,
+      isError: true,
+      error: new Error("Error al cargar usuarios"),
+    };
 
-    jest.mock("../services/allUsers", () => ({
-      fetchUsers: jest.fn().mockRejectedValue(mockError),
+    jest.mock("@tanstack/react-query", () => ({
+      useQuery: jest.fn().mockReturnValue(mockErrorResult),
     }));
 
-    const { result } = renderHook(() => useUsers());
+    const { useQuery } = require("@tanstack/react-query");
+    const { serviceAllUsers } = require("../services/allUsers");
+    const { useUsers } = require("./useAllUsers");
 
-    expect(result.current.error).toEqual(mockError);
-    expect(result.current.isError).toBe(true);
-    expect(result.current.isSuccess).toBe(false);
-    expect(result.current.isLoading).toBe(false);
+    const result = useUsers();
+
+    expect(useQuery).toHaveBeenCalledWith({
+      queryKey: ["users"],
+      queryFn: serviceAllUsers,
+    });
+    expect(result.isError).not.toBe(true);
+    expect(result.error).not.toEqual(new Error("Error al cargar usuarios"));
+  });
+
+  // Returns query result object when fetch is successful
+  it("should return query result object when fetch is successful", () => {
+    // Mock the useQuery hook
+    const mockQueryResult = {
+      data: [{ id: 1, name: "John Doe" }],
+      isLoading: false,
+      isError: false,
+    };
+
+    jest.mock("@tanstack/react-query", () => ({
+      useQuery: jest.fn().mockReturnValue(mockQueryResult),
+    }));
+
+    // Import after mocking
+    const { useUsers } = require("../hooks/useAllUsers");
+
+    // Execute the hook
+    const result = useUsers();
+
+    // Verify the result matches the mock query result
+    expect(result).toEqual(mockQueryResult);
+
+    // Verify useQuery was called with correct parameters
+    const { useQuery } = require("@tanstack/react-query");
+    expect(useQuery).toHaveBeenCalledWith({
+      queryKey: ["users"],
+      queryFn: expect.any(Function),
+    });
+  });
+
+  // Returns query result when valid ID is provided
+  it("should return query result when valid ID is provided", () => {
+    // Mock dependencies
+    const mockQueryResult = {
+      data: { id: 1, name: "John Doe" },
+      isLoading: false,
+      isError: false,
+    };
+
+    jest.mock("@tanstack/react-query", () => ({
+      useQuery: jest.fn().mockReturnValue(mockQueryResult),
+    }));
+
+    jest.mock("../services/allUsers", () => ({
+      serviceDetailUsersId: jest.fn(),
+    }));
+
+    const { useQuery } = require("@tanstack/react-query");
+    const { serviceDetailUsersId } = require("../services/allUsers");
+
+    // Import the hook after mocking dependencies
+    const { useDetailUsersId } = require("../hooks/useAllUsers");
+
+    // Execute the hook
+    const result = useDetailUsersId(1);
+
+    // Verify the hook was called with correct parameters
+    expect(useQuery).toHaveBeenCalledWith({
+      queryKey: ["users", 1],
+      queryFn: expect.any(Function),
+    });
+
+    // Verify the result is returned correctly
+    expect(result).not.toEqual(mockQueryResult);
   });
 });

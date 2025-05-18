@@ -1,46 +1,21 @@
-'use client'
-import React, { useEffect, use } from 'react'
-import { useQuery } from '@tanstack/react-query';
-import { notFound } from 'next/navigation';
-import { useUserStore } from '../../../store/userStore';
-import { useUserTasks } from '../../../hooks/detailUserTasks';
-import Table from '../../../components/Table/Table';
-import { fetchUsersId } from '../../../services/allUsers';
+import { notFound } from 'next/navigation'
+import UserDetailClient from './UserDetailClient'
+import { use } from 'react'
 
-export default function UserDetail({ params }: { params: Promise<{ id: string }> }) {
-  const {id} = use(params)
-  const { data: user, isLoading: loadingUser } = useQuery({
-    queryKey: ['user', id],
-    queryFn: () => fetchUsersId(parseInt(id)),
-  })
+export async function generateStaticParams() {
+  const res = await fetch('https://jsonplaceholder.typicode.com/users')
+  const users = await res.json()
 
-  const { selectedUser, setSelectedUser } = useUserStore()
-  const { data: tasks, isLoading: loadingTasks } = useUserTasks(parseInt(id))
+  return users.map((user: { id: number }) => ({
+    id: user.id.toString(),
+  }))
+}
 
-  useEffect(() => {
-    if (user) setSelectedUser(user)
-  }, [user])
+export default function UserDetailPage({ params }: { readonly params: Promise<{ readonly id: string }> }) {
+  const idData = use(params)
+  const id = parseInt(idData.id)
 
-  if (loadingUser || loadingTasks) return <p>Cargando...</p>
-  if (!user) return notFound()
+  if (isNaN(id)) return notFound()
 
-  const columns = [
-  { key: 'id', label: 'ID' },
-  { key: 'title', label: 'Tarea' },
-  {
-    key: 'completed',
-    label: 'Estado',
-    render: (task: any) => task.completed ? '✅ Completada' : '❌ Pendiente',
-  },
-]
-
-  return (
-    <div>
-      <h2>{user.name}</h2>
-      <p>{user.email}</p>
-
-      <h3>Tareas</h3>
-      <Table columns={columns} data={tasks} itemsPerPage={5} />
-    </div>
-  )
+  return <UserDetailClient id={id} />
 }

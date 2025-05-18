@@ -1,11 +1,12 @@
 'use client'
+
 import styles from './Table.module.scss'
-import { useState } from 'react'
+import React, { ReactNode, useState } from 'react'
 
 type Column<T> = {
   key: keyof T | string
   label: string
-  render?: (item: T) => React.ReactNode
+  render?: (item: T) => ReactNode
 }
 
 type TableProps<T> = {
@@ -14,7 +15,7 @@ type TableProps<T> = {
   itemsPerPage?: number
 }
 
-export default function Table<T>({ columns, data, itemsPerPage = 5 }: TableProps<T>) {
+export default function Table<T>({ columns, data, itemsPerPage = 5 }: Readonly<TableProps<T>>) {
   const [currentPage, setCurrentPage] = useState(1)
 
   const totalPages = Math.ceil(data.length / itemsPerPage)

@@ -1,9 +1,18 @@
 import { useQuery } from "@tanstack/react-query";
-import { fetchUsers } from "../services/allUsers";
+import { serviceAllUsers, serviceDetailUsersId } from "../services/allUsers";
 
 export const useUsers = () => {
-  return useQuery({
+  const users = useQuery({
     queryKey: ['users'],
-    queryFn: fetchUsers,
+    queryFn: serviceAllUsers,
   })
+  return users
+}
+
+export const useDetailUsersId = (id: number) => {
+  const detailUserID = useQuery({
+    queryKey: ['users', id],
+    queryFn: () => serviceDetailUsersId(id),
+  })
+  return detailUserID
 }
